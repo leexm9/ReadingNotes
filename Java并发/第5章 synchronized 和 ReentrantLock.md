@@ -93,7 +93,7 @@ ReentrantLock 和 synchronized 在并发编程中，有着相同的语义，但�
 
 在运行期间，Mark Word 里存储的数据会随着锁标志位的变化而变化。Mark Word 可能变化存储为以下4种数据结构：![](./pictures/markword1.jpg)
 
-在64位虚拟机，Mark Word 是64bit大小，其存储结构：![](./pictures/markword2.jpg)
+在64位虚拟机，Mark Word 是64bit大小，其存储结构：![64虚拟机中Mark Word](./pictures/markword2.jpg)
 
 其中轻量级锁和偏向锁是 Java 6 为了减少获得锁和释放锁带来的性能消耗引入的。我们重点分析下重量级锁也就是通常所说的 synchronized 的对象锁，锁标志位为10，其中指针指向的 monitor 对象（也称为管程或监视器锁）的起始地址。每个对象都存在着一个 monitor 对象与之关联，对象与其 monitor 之间的关系存在多种实现方式，如 monitor 可以与对象一起创建和销毁，或者当线程试图获取对象锁时自动生成，当一个 monitor 被某个线程持有后，它便处于锁定状态。在 Java 虚拟机中，monitor 是由 ObjectMonitor 实现的，其主要数据结构如下（位于 HotSpot 虚拟机源码 ObjectMonitor.hpp 文件，C++实现的）：
 ```c++
