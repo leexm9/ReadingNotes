@@ -8,11 +8,11 @@ sun.misc.Unsafe 类，该类提供了面向操作系统直接操作内存和 CPU
 
 java.util.concurrent.locks.LockSupport 类就是对 sun.misc.Unsafe 类进行了一些封装，主要提供一些锁的基础操作。
 
-LockSupport阻塞线程的机制与 Object 的wait和notify是不一样的：
+LockSupport 阻塞线程的机制与 Object 的wait和notify是不一样的：
 
 - 调用API层面的区别
 
-  LockSupport 的 park 和 unpark 方法可以用“线程”作为该方法的参数，语义更合乎逻辑。 Object 的wait和notify是由监视器对象来调用的，对线程来说它的阻塞和唤醒是被动的，不能准确的控制某个指定的线程，要么随机唤醒（notify）、要么唤醒全部（notifyAll）。
+  LockSupport 的 park 和 unpark 方法可以用“线程”作为该方法的参数，语义更合乎逻辑。 Object 的 wait 和notify 是由监视器对象来调用的，对线程来说它的阻塞和唤醒是被动的，不能准确的控制某个指定的线程，要么随机唤醒（notify）、要么唤醒全部（notifyAll）。
 
 - 实现原理的区别
 
