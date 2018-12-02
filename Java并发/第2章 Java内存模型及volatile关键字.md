@@ -1,6 +1,6 @@
 
 
-## 第 2 章 Java 内存模型以及 volatile 关键字
+## 第 2 章 Java内存模型以及volatile关键字
 
 [TOC]
 
