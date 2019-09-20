@@ -9,7 +9,7 @@ ReentrantLock 是基于 AQS 设计的可重入锁，synchronized 是基于对象
 public class Demo {
     Lock lock = new Lock();
     public void outer(){
-    	lock.lock();
+        lock.lock();
         inner();
         lock.unlock();
     }				
@@ -209,7 +209,7 @@ public synchronized void method2();
 关于monitorexit 
 
 - 指令执行的时候，monitor 的计数器的值减1，当减1后为计数器的值为 0 的时候，线程将释放 monitor。其它被这个 monitor 阻塞的线程开始尝试获取该 monitor 的所有权；
-- object 的 wait/notify 方法是依赖 monitor 的，所以只能在同步代码块或者方法中才能调用 wait/notify 等方法，否则会抛出异常。	执行 monitorexit 必须是某个已经取得 monitor 所有权的线程； 
+- object 的 wait/notify 方法是依赖 monitor 的，所以只能在同步代码块或者方法中才能调用 wait/notify 等方法，否则会抛出异常。执行 monitorexit 必须是某个已经取得 monitor 所有权的线程； 
 
 synchronized 同步方法（method2）
 
@@ -242,6 +242,10 @@ Java 6 为了减少获得锁和释放锁带来的性能消耗，引入了“偏�
 
   ![](./pictures/synchronized2.jpg)
 
+  
+  
+  ![synchronized锁升级过程](./pictures/synchronized锁升级过程.png)
+  
   因为锁的自旋会消耗 CPU，为了避免无用的自旋（比如获得锁的线程被阻塞了），一旦锁升级成重量级锁，就不会恢复到轻量级锁状态。当锁处于这个状态下，其他线程试图获取锁时，都会被阻塞住，当持有锁的线程释放锁之后会唤醒这些线程，被唤醒的线程就会进行新一轮的锁的竞争。
 
 #### 5.2.3 锁竞争的优缺点对比
@@ -249,7 +253,7 @@ Java 6 为了减少获得锁和释放锁带来的性能消耗，引入了“偏�
 | 锁   | 优点 | 缺点 | 适用场景 |
 | :----: | :----: | :----: | :--------: |
 | 偏向锁 | 加锁和解锁不需要额外的消耗，和执行非同步代码相比仅存在纳秒级的差距 | 如果线程间存在锁竞争，会带来额外的锁撤销的消耗 | 适用于只有一个线程访问同步代码块场景 |
-| 轻量级锁 | 竞争的线程不会阻塞，提高了程序的响应速度 | 如果始终得不到锁的竞争线程，适用自旋会消耗CPU | 追求响应时间，同步代码块执行速度非常快 |
+| 轻量级锁 | 竞争的线程不会阻塞，提高了程序的响应速度 | 如果始终得不到锁的竞争线程，使用自旋会消耗CPU | 追求响应时间，同步代码块执行速度非常快 |
 | 重量级锁 | 线程竞争不使用自旋，不会消耗CPU | 线程阻塞，响应速度缓慢 | 追求吞吐量，同步代码块执行时间较长 |
 
 ### 5.3 ReentrantLock 解析
@@ -285,7 +289,7 @@ Lock 的 API 接口：
 | boolean tryLock() | 尝试非阻塞的获取锁，调用该方法后立刻返回，如果能够获取则返回 true，反之返回 false |
 | boolean tryLock(Long time, TimeUnit unit) throws InterruptedException | 超时获取锁，当前线程在一下3种情况下会返回：<br/>1、当前线程在超时时间内获得了锁<br/>2、当前线程在超时时间内被中断了<br/>3、超时时间结束，返回false |
 | void unLock() | 释放锁 |
-| Condition new Condition() | 获取等待通知组件，该组件和当前的锁绑定，当前线程只有获得了锁，才能调用该组件的 wait() 方法；而调用后，当前线程将释放锁 |
+| Condition new Condition() | 获取等待通知组件，该组件和当前的锁绑定，当前线程只有获得了锁，才能调用该组件的 await() 方法；而调用后，当前线程将释放锁 |
 
 #### 5.3.2 ReetrantLock 重入锁
 
@@ -438,7 +442,8 @@ ReetrantLock本身也是一种支持重进入的锁，即该锁可以支持一�
           int c = getState();		// 获取到重入次数
           if (c == 0) {
               /**
-               * 查看是否有比当前线程等待更久的线程（即当前线程节点是否有前置节点），有就返回 true 				* 没有就返回 false，和 nonfairTryAcquire 相比，只多出了这一块
+               * 查看是否有比当前线程等待更久的线程（即当前线程节点是否有前置节点），有就返回 true 				         * 没有就返回 false，和 nonfairTryAcquire 相比，只多出了这一块
+               * hasQueuedPredecessors() 这里体现了公平性
                */
               if (!hasQueuedPredecessors() &&
                   compareAndSetState(0, acquires)) {
@@ -460,7 +465,7 @@ ReetrantLock本身也是一种支持重进入的锁，即该锁可以支持一�
 
 ### 5.4 ReentrantReadWriteLock 解析
 
-ReentrantLock 实现了一种标准的互斥锁：每次最多只有一个线程能持有锁，互斥是一种保守的加锁策略。而读写锁在同一时刻可以允许多个线程访问：一个资源可以被对个读操作访问，或者被一个写操作访问，但两者不能同时进行，读写锁保证了写操作对读操作的可见性。读写锁除了可以显著的提升并发性外，还简化了读写交互场景的编程方式。
+ReentrantLock 实现了一种标准的互斥锁：每次最多只有一个线程能持有锁，互斥是一种保守的加锁策略。而读写锁在同一时刻可以允许多个线程访问：一个资源可以被多个读操作访问，或者被一个写操作访问，但两者不能同时进行，读写锁保证了写操作对读操作的可见性。读写锁除了可以显著的提升并发性外，还简化了读写交互场景的编程方式。
 
 读写锁的特性：
 
@@ -494,7 +499,7 @@ ReentrantReadWriteLock，是 ReadWriteLock 的实现，除了接口方法外，�
 
 ```java
 public class ReadWriteMap<K, V> {
-    private final Map<K, V>;
+    private final Map<K, V> map;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock r = lock.readLock();
     private final Lock w  = lock.writeLock();

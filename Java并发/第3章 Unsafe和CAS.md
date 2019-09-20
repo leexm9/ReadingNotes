@@ -110,35 +110,35 @@ Unsafe类中的方法有很多:
 
 - 类和实例对象以及变量的操作，主要方法如下
 
-```java
-// 获取字段f在实例对象中的偏移量
-public native long objectFieldOffset(Field f);
-// 静态属性的偏移量，用于在对应的Class对象中读写静态属性
-public native long staticFieldOffset(Field f);
-// 返回值就是f.getDeclaringClass()
-public native Object staticFieldBase(Field f);
+  ```java
+  // 获取字段f在实例对象中的偏移量
+  public native long objectFieldOffset(Field f);
+  // 静态属性的偏移量，用于在对应的Class对象中读写静态属性
+  public native long staticFieldOffset(Field f);
+  // 返回值就是f.getDeclaringClass()
+  public native Object staticFieldBase(Field f);
 
-// 获得给定对象偏移量上的int值，所谓的偏移量可以简单理解为指针指向该变量的内存地址，
-// 通过偏移量便可得到该对象的变量，进行各种操作
-public native int getInt(Object o, long offset);
-// 设置给定对象上偏移量的int值
-public native void putInt(Object o, long offset, int x);
+  // 获得给定对象偏移量上的int值，所谓的偏移量可以简单理解为指针指向该变量的内存地址，
+  // 通过偏移量便可得到该对象的变量，进行各种操作
+  public native int getInt(Object o, long offset);
+  // 设置给定对象上偏移量的int值
+  public native void putInt(Object o, long offset, int x);
 
-// 获得给定对象偏移量上的引用类型的值
-public native Object getObject(Object o, long offset);
-// 设置给定对象偏移量上的引用类型的值
-public native void putObject(Object o, long offset, Object x);
-// 其他基本数据类型(long,char,byte,float,double)的操作与getInthe及putInt相同
+  // 获得给定对象偏移量上的引用类型的值
+  public native Object getObject(Object o, long offset);
+  // 设置给定对象偏移量上的引用类型的值
+  public native void putObject(Object o, long offset, Object x);
+  // 其他基本数据类型(long,char,byte,float,double)的操作与getInthe及putInt相同
 
-// 设置给定对象的int值，使用volatile语义，即设置后立马更新到内存对其他线程可见
-public native void  putIntVolatile(Object o, long offset, int x);
-// 获得给定对象的指定偏移量offset的int值，使用volatile语义，总能获取到最新的int值。
-public native int getIntVolatile(Object o, long offset);
-// 其他基本数据类型(long,char,byte,float,double)的操作与putIntVolatile及getIntVolatile相同，引用类型putObjectVolatile也一样。
+  // 设置给定对象的int值，使用volatile语义，即设置后立马更新到内存对其他线程可见
+  public native void  putIntVolatile(Object o, long offset, int x);
+  // 获得给定对象的指定偏移量offset的int值，使用volatile语义，总能获取到最新的int值。
+  public native int getIntVolatile(Object o, long offset);
+  // 其他基本数据类型(long,char,byte,float,double)的操作与putIntVolatile及getIntVolatile相同，引用类型putObjectVolatile也一样。
 
-// 与putIntVolatile一样，但要求被操作字段必须有volatile修饰
-public native void putOrderedInt(Object o,long offset,int x);
-```
+  // 与putIntVolatile一样，但要求被操作字段必须有volatile修饰
+  public native void putOrderedInt(Object o,long offset,int x);
+  ```
 
 - 数组操作
 
@@ -613,6 +613,8 @@ ABA  问题的描述：
           });
           t3.start();
           t4.start();
+          t3.join();
+          t4.join();
       }
   }
   ```

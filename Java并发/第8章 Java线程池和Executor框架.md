@@ -158,4 +158,3 @@ public ThreadPoolExecutor(int corePoolSize,
 - ScheduledThreadPoolExecutor 是一个实现类，可以在给定的延迟后运行命令，或者定期执行命令。它比Timer更灵活，功能更强大
 - Future 接口和实现 Future 接口的 FutureTask 类，代表异步计算的结果
 - Runnable 接口和 Callable 接口的实现类，都可以被 ThreadPoolExecutor 或 ScheduledThreadPoolExecutor 执行
-

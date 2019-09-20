@@ -1,10 +1,10 @@
-## 第 4 章 LockSupport 和 AbstractQueuedSynchronizer
+## 第 4 章 LockSupport 和 AbstractQueuedSynchronizer的解读
 
 [TOC]
 
 ### 4.1 LockSupport
 
-sun.misc.Unsafe 类，该类提供了面向操作系统直接操作内存和 CPU 的方法，例如分配内存和阻塞线程等等。但时该类在使用时是不安全的，所以 jdk 在不同的场景下对它做了不同的包装。
+sun.misc.Unsafe 类，该类提供了面向操作系统直接操作内存和 CPU 的方法，例如分配内存和阻塞线程等等。但是该类在使用时是不安全的，所以 jdk 在不同的场景下对它做了不同的包装。
 
 java.util.concurrent.locks.LockSupport 类就是对 sun.misc.Unsafe 类进行了一些封装，主要提供一些锁的基础操作。
 
@@ -156,7 +156,7 @@ public class LockSupport {
 
 |                        方法                        |                             描述                             |
 | :------------------------------------------------: | :----------------------------------------------------------: |
-|               void acquire(int arg)                | 独占式获取同步状态，如果当前线程获取同步状态成功，则由该方法返回；否则，线程将会进入同步等待队列等待，该方法将会调用重写的 tryAcquire(int arg) 方法 |
+|               void acquire(int arg)                | 独占式获取同步状态，如果当前线程获取同步状态成功，则由该方法返回；否则，线程将会进入同步队列等待，该方法将会调用重写的 tryAcquire(int arg) 方法 |
 |         void acquireInterruptibly(int arg)         | 与 acquire(int arg) 相同，但是该方法响应中断，当前线程未获取到同步状态而进入同步队列中，如果当前线程被中断，则该方法会抛出 InterruptedException 并返回 |
 |    boolean tryAcquireNanos(int arg, long nanos)    | 在 acquireInterruptibly(int arg) 基础上增加了超时限制，如果当前线程在超时时间内没有获得到同步状态，那么将会返回 false；如果获取到，则返回 true |
 |            void acquireShared(int arg)             | 共享式获取同步状态，如果当前线程未获取到同步状态，将会进入同步队列等待，与独占式获取的主要区别是在同一时刻可以有多个线程获得同步状态 |
@@ -171,12 +171,12 @@ public class LockSupport {
 ```java
 public class Mutex implements Lock {
     /**
-     * 静态内部类自定义同步器
+     * 静态内部类，自定义同步器
      */
     private static class Sync extends AbstractQueuedSynchronizer {
         @Override
         protected boolean isHeldExclusively() {
-            return super.getState() == 1;
+            return getExclusiveOwnerThread() == Thread.currentThread();
         }
 
         @Override
@@ -329,7 +329,7 @@ Node类的关键字段：
 public abstract class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer implements java.io.Serializable {
 	...
     static final class Node {
-        // 分享锁模式
+        // 共享锁模式
         static final Node SHARED = new Node();
         // 独占锁模式
         static final Node EXCLUSIVE = null;
@@ -337,17 +337,17 @@ public abstract class AbstractQueuedSynchronizer extends AbstractOwnableSynchron
         // 线程取消状态
         static final int CANCELLED =  1;
         // thread执行成功，等待unpack
-        static final int SIGNAL    = -1;
+        static final int SIGNAL = -1;
         // thread位于condition queue队列中，等待唤醒
         static final int CONDITION = -2;
         
         static final int PROPAGATE = -3;
-		// 等待状态
+		    // 等待状态
         volatile int waitStatus;
-		// 前驱节点
+		    // 前驱节点
         volatile Node prev;
         
-		// 后续节点
+		    // 后续节点
         volatile Node next;
 
         // 将当前节点入队的线程对象
@@ -426,7 +426,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 }
 ```
 
-当队列不为空时，节点添加到队列前，队列状态如下图所示：
+当队列不为空时，节点添加到队尾，队列状态如下图所示：
 
 ![](./pictures/queue1.jpg)
 
@@ -440,7 +440,7 @@ private final boolean compareAndSetTail(Node expect, Node update) {
 
 ![](./pictures/queue4.jpg)
 
-出对操作
+出队操作
 
 ```java
 private void setHead(Node node) {
@@ -466,7 +466,7 @@ public final void acquire(int arg) {
 ![](./pictures/acquire1.jpg)
 
 - 先通过 tryAcquire	来尝试获取同步状态，如果能获取到的话就返回；否则加入到队列中，并阻塞线程；
-- 线程退出阻塞的时候，通过	Thread.interrupted() 来判断线程是否是因为被中断才退出 park 的，若是的话，则中断当前线程。
+- 线程退出阻塞的时候，通过 Thread.interrupted() 来判断线程是否是因为被中断才退出 park 的，若是的话，则中断当前线程。
 
 ```java
 // 线程节点之前已经加入到队列中了，该方法将要阻塞该线程，在退出阻塞的时，返回该线程是否是被中断退出的。
@@ -488,8 +488,9 @@ final boolean acquireQueued(final Node node, int arg) {
                 return interrupted;
             }
             
-            // 去除前面被取消的(CANCELLED)的线程
-            // 若前继节点没有没被取消，则表示当前线程可以被park										    // park当前线程，park结束时检查是否被interrupt，若是则设置interrupted为true，跳出循环后中断线程
+            // 去除前面被取消的(CANCELLED)的线程节点
+            // 若前继节点没有没被取消，则表示当前线程可以被park										    
+           // park当前线程，park结束时检查是否被interrupt，若是则设置interrupted为true，跳出循环后中断线程
             if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
                 interrupted = true;
         }
@@ -500,14 +501,15 @@ final boolean acquireQueued(final Node node, int arg) {
     }
 }
 
-// 去除前面被取消的(CANCELLED)的线程，若前继节点没有没被取消,则表示当前线程可以被park
+// 去除前面被取消的(CANCELLED)的线程节点，若前继节点没有没被取消,则表示当前线程可以被park
 private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
     int ws = pred.waitStatus;
+  	// 前继节点已经成功执行，等待释放锁，所以当前的线程可以安全的park 
     if (ws == Node.SIGNAL)
-        // 前继节点已经成功执行，等待释放锁，所以当前的线程可以安全的park 
         return true;
+  
+  	// 前继节点的线程已经被取消，所以跳过已经被取消的节点，并一直往前跳过所有连续的被取消节点
     if (ws > 0) {
-        // 前继节点的线程已经被取消，所以跳过已经被取消的节点，并一直往前跳过所有连续的被取消节点
         do {
             node.prev = pred = pred.prev;
         } while (pred.waitStatus > 0);
@@ -592,7 +594,9 @@ private void doAcquireShared(int arg) {
                 }
             }
             
-            // 去除前面被取消的（CANCELLED）的线程													// 若前继节点没有没被取消，则表示当前线程可以被park											// park当前线程，park结束时检查是否被interrupt，若是则设置interrupted为true，跳出循环后中断线程	
+            // 去除前面被取消的（CANCELLED）的线程节点												
+            // 若前继节点没有没被取消，则表示当前线程可以被park											
+            // park当前线程，park结束时检查是否被interrupt，若是则设置interrupted为true，跳出循环后中断线程	
             if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
                 interrupted = true;
         }
