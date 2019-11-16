@@ -193,6 +193,8 @@ redis 的主从同步满足 ***CAP*** 理论的 ***AP***，数据会满足最终
 
 <img src="./pictures/redis1.png" alt="redis主从同步流程" style="zoom:50%;" />
 
+
+
 1. 首先  slave 向 master 发起 SYNC 命令。这一步在 slave启动后触发，master被动得将新进的 slave 节点加入自己的主从同步集群
 2. master 收到 SYNC 后，开启 bgsave 操作
 3. bgsave 完成后，master 将快照信息发送给slave
@@ -233,13 +235,13 @@ sentinel 节点间因为共同监视同一个 master 节点从而相互关联起
 
 1. 所有需要相互感知的 sentinel 都向它们共同的master 节点上订阅相同的 channel:\_\_sentinel\_\_:hello
 2. 新加入的 sentinel 节点向这个 channel 发布一条包含自己信息的消息，这个 channel 的其他订阅者就可以发现这个新节点
-3. 新 sentinel 节点和其他节点建立长连接
+3. 其他节点和新 sentinel 节点建立长连接
 
 ##### 4.2.3 master 故障发现
 
 <img src="./pictures/redis6.png" alt="master 故障发现" style="zoom:50%;" />
 
-- sentinel节点定期向 master发送心跳包判断器存储状态
+- sentinel节点定期向 master发送心跳包判断状态
 - 一旦发现 master 没有正确响应，则 sentinel 节点将此 master 置为“主观不可用状态”
 - sentinel 节点将master 的“主观不可用状态”发送给其他所有的 sentinel 节点进行确认，当确认的 sentinel 节点数>=quorum(可配置)时，则判定该 master为“客观不可用”，随后进入故障转移流程
 
@@ -321,7 +323,7 @@ Codis 原理：
 
 2. 向节点 A 发送状态变更指令，将 A 的对应 slot 状态置为 migrating，表示对应 slot 从其迁出
 
-3. 迁移过程，迁移 slot 中数据按 key 挨个迁移：A 节点获取内容 —> 存到 B 节点 —> A 节点将对应的 key
+3. 迁移过程，迁移 slot 中数据按 key 挨个迁移：A 节点获取内容 —> 存到 B 节点 —> A 节点将对应的 key 删除
 
 4. 迁移过程是同步的
 
