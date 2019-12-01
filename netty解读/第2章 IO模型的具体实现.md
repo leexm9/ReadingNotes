@@ -1,6 +1,6 @@
-### 第 2 章 I/O 模型的具体实现
+##  第 2 章 I/O 模型的具体实现
 
-上一章节讲了 Unix 的 5 种 I/O 模型，接下来将 I/O 模型的 Java 中的具体实现。本章节的[源码地址](https://github.com/oneET/network)。
+上一章节讲了 Unix 的 5 种 I/O 模型，接下来使用 Java 实现 I/O 模型。
 
 ### 2.1 阻塞式 I/O
 
