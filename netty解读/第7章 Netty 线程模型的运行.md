@@ -59,13 +59,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return;
       } catch (CancelledKeyException e) {
         if (!selected) {
-          // Force the Selector to select now as the "canceled" SelectionKey may still be
-          // cached and not removed because no Select.select(..) operation was called yet.
           eventLoop().selectNow();
           selected = true;
         } else {
-          // We forced a select operation on the selector before but the SelectionKey is still cached
-          // for whatever reason. JDK bug ?
           throw e;
         }
       }
@@ -97,11 +93,6 @@ public abstract class AbstractNioChannel extends AbstractChannel {
  		......
     
    /**
-     * Create a new instance
-     *
-     * @param parent      the parent {@link Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link SelectableChannel} on which it operates
-     * @param readInterestOp    the ops to set to receive data from the {@link SelectableChannel}
      * 这个构造方法表明在 new 一个实例时可以指定感兴趣的 SelectionKey 的事件
      * 根据上一章，我们知道 ServerBootstrap 的启动时会初始化一个 NioServerSocketChannel
      * 分析 NioServerSocketChannel 的初始化源码流程，我们可以知道在初始化时就赋值了 SelectionKey.OP_ACCEPT
@@ -188,8 +179,6 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
           localAddress instanceof InetSocketAddress &&
           !((InetSocketAddress) localAddress).getAddress().isAnyLocalAddress() &&
           !PlatformDependent.isWindows() && !PlatformDependent.maybeSuperUser()) {
-        // Warn a user about the fact that a non-root user can't receive a
-        // broadcast packet on *nix if the socket is bound on non-wildcard address.
         logger.warn(
           "A non-root user can't receive a broadcast packet if the socket " +
           "is not bound to a wildcard address; binding to a non-wildcard " +
@@ -262,13 +251,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     if (regFuture.isDone()) {
-      // At this point we know that the registration was complete and successful.
       ChannelPromise promise = channel.newPromise();
       doBind0(regFuture, channel, localAddress, promise);
       return promise;
     } else {
-      // Registration future is almost always fulfilled already, but just in case it's not.
       final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
+      /**
+       * 这里通过使用 addListener 的方式将需要调用的doBind0()方法包装成 task 添加进 nioEventLoop 的任务队列中
+       */
       regFuture.addListener(new ChannelFutureListener() {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {

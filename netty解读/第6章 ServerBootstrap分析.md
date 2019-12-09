@@ -38,11 +38,6 @@ public class NettyServer {
 结合 ServerBootstrap 类的使用和类中的方法，我们知道 ServerBootstrap 类主要作用是在初始化时给各个属性赋值。我们挑选其中重要的几个方法来讲
 
 ```java
-/**
- * Set the {@link EventLoopGroup} for the parent (acceptor) and the child (client). These
- * {@link EventLoopGroup}'s are used to handle all the events and IO for {@link ServerChannel} and
- * {@link Channel}'s.
- */
 public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGroup) {
   super.group(parentGroup);
   ObjectUtil.checkNotNull(childGroup, "childGroup");
@@ -57,11 +52,6 @@ public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGro
 根据方法中的注解说明并结合 Reactor 线程模型，我们可以明确 parentGroup 用于接受连接，childGroup 线程用于处理连接上的读写请求等。
 
 ```java
-/**
- * The {@link Class} which is used to create {@link Channel} instances from.
- * You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
- * {@link Channel} implementation has no no-args constructor.
- */
 public B channel(Class<? extends C> channelClass) {
   return channelFactory(
     new ReflectiveChannelFactory<C>(ObjectUtil.checkNotNull(channelClass,"channelClass"))

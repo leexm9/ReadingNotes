@@ -1,4 +1,4 @@
-## 第 5 章 NioEventLoopGroup 分析
+## 第 5 章 NioEventLoop 分析
 
 ### 5.1 NioEventLoop 类图
 
@@ -91,7 +91,7 @@ protected void run() {
 }
 ```
 
-代码我们粗略的看下就会发现，方法体执行的逻辑就是 **Java 中单线程执行网络 I/O 的连接、读、写的逻辑。**
+代码我们粗略的看下就会发现，方法体执行的逻辑就是在无限循环中执行任务
 
 > Nio 单线程处理逻辑，参考下项目代码里的 NioServer 类
 
