@@ -158,3 +158,5 @@
      - 第二步，调用覆写 BeanPostProcessor.postProcessBeforeInitialization 方法；
      - 第三步，调用 invokeInitMethods 方法，触发 bean 的 init 方法。这里 InitializingBean 接口方法先被调用，之后才调用指定的 init 方法；
      - 第四步，调用 BeanPostProcessor.postProcessAfterInitialization 方法，各种代理类的生成就是在这步实现的
+
+10. 拿到 bean 之后，各种缓存处理操作
