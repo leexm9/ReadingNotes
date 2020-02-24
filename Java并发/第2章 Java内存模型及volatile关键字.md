@@ -1,5 +1,3 @@
-
-
 ## 第 2 章 Java内存模型以及volatile关键字
 
 [TOC]
@@ -42,9 +40,9 @@ Java内存模型（即 Java Memory Model，简称 JMM）本身是一种抽象的
 
 - 主内存
 
-  主要存储的是 Java 实例对象，所有线程创建的实例对象都存放在主内存中，不管该**实例对象是成员变量还是方法中的局部变量**，当然也包括了共享的类信息、常量、静态变量。由于是共享数据区域，多条线程对同一个变量进行访问可能会发现线程安全问题。
+  主要存储的是 Java 实例对象，所有线程创建的实例对象都存放在主内存中，不管该**实例对象是成员变量还是方法中的局部变量**，当然也包括了共享的类信息、常量、静态变量。由于是共享数据区域，多条线程对同一个变量进行访问可能会出现线程安全问题。
 
-- 本地内存
+- *本地内存*
 
   主要存储当前方法的所有本地变量信息（本地内存中存储着主内存中的变量副本拷贝），每个线程只能访问自己的本地内存，即线程中的本地变量对其它线程是不可见的，就算是两个线程执行的是同一段代码，它们也会各自在自己的本地内存中创建属于当前线程的本地变量，当然也包括了字节码行号指示器、相关 native 方法的信息。注意由于本地内存是每个线程的私有数据，线程间无法相互访问，因此存储在本地内存的数据不存在线程安全问题。
 
@@ -126,10 +124,10 @@ inited = true; //语句2
 while (!inited) {
 	sleep()
 }
-doSomethingwithconfig(context);
+doSomethingWithConfig(context);
 ```
 
-由于语句2可能会在语句1之前运行，所以可能会在 context 还没有被初始化的时候，就开始执行doSomethingwithconfig(context) 了。 在 Java 中可以使用 volatile 关键字来对 inited 进行修饰，从而保证语句1  happen-before 语句2。
+由于语句2可能会在语句1之前运行，所以可能会在 context 还没有被初始化的时候，就开始执行doSomethingWithConfig(context) 了。 在 Java 中可以使用 volatile 关键字来对 inited 进行修饰，从而保证语句1  happen-before 语句2。
 
 ### 2.3 Java 内存模型对于原子性、可见性和有序性的解决方案
 
@@ -141,8 +139,8 @@ doSomethingwithconfig(context);
 - 可见性问题
   - 单线程：不存在内存可见性问题；
   - 多线程：Java 通过**volatile**、**synchronized**字实现可见性
-    - **volatile**：volatile 变量保证变量新值立即被同步回主存，每次读取 volatile 变量都立即从主存刷新
-    - **synchronized**：对变量进行解锁前，将对应变量同步回内存
+    - **volatile**：volatile 保证变量新值立即被同步回主存，同时使其他线程的本地内存中 volatile 修饰的变量副本值失效，从而读取 volatile 变量要从主存刷新
+    - **synchronized**：对变量进行解锁前，将对应变量同步回主内存
 - 有序性问题
   - **volatile**：通过禁止重排序实现有序性
   - **synchronized**：通过声明临界区，保证线程互斥访问，实现有序性
@@ -164,7 +162,7 @@ doSomethingwithconfig(context);
 
 ### 2.4 synchronized 关键字
 
-关键字 ***synchronized*** 的作用是实现线程间的同步。它的工作是对同步的代码加锁，使得每一次，只能有一个线程进入同步块，从而保证线程间的安全性。
+关键字 ***synchronized*** 的作用是实现线程间的同步。它的工作是对同步的代码加锁，使得每一次只能有一个线程进入同步块，从而保证线程间的安全性。
 
 - 指定加锁对象：对给定的对象加锁，进入同步代码块前要获得给定对象的锁。
 - 直接作用于实例方法：相当于对当前实例加锁，进入同步代码块前要获得当前实例的锁。
@@ -209,7 +207,7 @@ j = i;		//线程2的操作
 ```java
 public class Counter {
 
-    private int counter = 0;
+    private int counter = 0;		// 这里是 counter 是实例变量
     private CountDownLatch countDownLatch = null;
 
     public Counter(CountDownLatch countDownLatch) {
@@ -222,6 +220,10 @@ public class Counter {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+      	/**
+      	 * 注意：这个操作是分三步完成的，读值、+1、写值，++操作就不是同步操作
+      	 * 如果 counter 是方法内定义的局部变量，++操作就没问题
+      	 */
         counter++;
         countDownLatch.countDown();
     }

@@ -279,7 +279,7 @@ public class MutexTest {
 相关概念
 
 - 独占锁
-  资源最多同时只能被一个线程占用
+  资源只能被一个线程占用
 - 共享锁
   资源同时可以被多个线程占用
 - 公平锁
@@ -569,7 +569,10 @@ public final void acquireShared(int arg) {
         doAcquireShared(arg);
 }
 
-// 该方法和独占模式acquireQueued方法很像，主要的区别就是在setHeadAndPropagate中，如果当前节点获取到了许可，且还有多余的许可，则继续让后继节点获取许可并唤醒他们，并一直往后传递下去。
+/**
+ * 该方法和独占模式acquireQueued方法很像，主要的区别就是在setHeadAndPropagate中，
+ * 如果当前节点获取到了许可，且还有多余的许可，则继续让后继节点获取许可并唤醒他们，并一直往后传递下去。
+ */
 private void doAcquireShared(int arg) {
     final Node node = addWaiter(Node.SHARED);
     boolean failed = true;
@@ -595,7 +598,7 @@ private void doAcquireShared(int arg) {
             }
             
             // 去除前面被取消的（CANCELLED）的线程节点												
-            // 若前继节点没有没被取消，则表示当前线程可以被park											
+            // 若前继节点没有没被取消，则表示当前线程应该被park											
             // park当前线程，park结束时检查是否被interrupt，若是则设置interrupted为true，跳出循环后中断线程	
             if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
                 interrupted = true;

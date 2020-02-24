@@ -75,7 +75,7 @@ Unsafe类中的方法有很多:
 - 操作内存的方法
 
   ```java
-  // 分配内存指定大小的内存
+  // 分配指定大小的内存
   public native long allocateMemory(long bytes);
   // 根据给定的内存地址address设置重新分配指定大小的内存
   public native long reallocateMemory(long address, long bytes);
@@ -156,10 +156,10 @@ Unsafe类中的方法有很多:
   ```java
   // 第一个参数o为给定对象，offset为对象内存的偏移量，通过这个偏移量迅速定位字段并设置或获取该字段的值，
   // expected表示期望值，x表示要设置的值，下面3个方法都通过CAS原子指令执行操作。
-  public final native boolean compareAndSwapObject(Object o, long offset,Object expected, Object x);                                                                                                  
-  public final native boolean compareAndSwapInt(Object o, long offset,int expected,int x);
+  public final native boolean compareAndSwapObject(Object o, long offset, Object expected, Object x);                                                                                                  
+  public final native boolean compareAndSwapInt(Object o, long offset, int expected, int x);
   
-  public final native boolean compareAndSwapLong(Object o, long offset,long expected,long x);
+  public final native boolean compareAndSwapLong(Object o, long offset, long expected, long x);
   ```
 
 - 挂起与恢复
@@ -244,7 +244,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
                 (AtomicInteger.class.getDeclaredField("value"));
         } catch (Exception ex) { throw new Error(ex); }
     }
-	//当前AtomicInteger 封装的int类型的值
+	  //当前AtomicInteger 封装的int类型的值
     private volatile int value;
 
     ...
@@ -576,7 +576,7 @@ ABA  问题的描述：
                   } catch (InterruptedException e) {
                       e.printStackTrace();
                   }
-                  boolean flag = atIn.compareAndSet(100,500);
+                  boolean flag = atIn.compareAndSet(100, 500);
                   System.out.println("flag:" + flag + ", newValue:" + atIn);
               }
           });
@@ -590,10 +590,10 @@ ABA  问题的描述：
               public void run() {
                   int time = atomicStampedR.getStamp();
                   // 更新为200
-                  atomicStampedR.compareAndSet(100, 200,time,time + 1);
+                  atomicStampedR.compareAndSet(100, 200, time, time + 1);
                   // 更新为100
                   int time2 = atomicStampedR.getStamp();
-                  atomicStampedR.compareAndSet(200, 100,time2,time2 + 1);
+                  atomicStampedR.compareAndSet(200, 100, time2, time2 + 1);
               }
           });
           Thread t4 = new Thread(new Runnable() {
@@ -606,7 +606,7 @@ ABA  问题的描述：
                   } catch (InterruptedException e) {
                       e.printStackTrace();
                   }
-                  boolean flag = atomicStampedR.compareAndSet(100,500,time,time+1);
+                  boolean flag = atomicStampedR.compareAndSet(100, 500, time, time+1);
                   System.out.println("sleep 后 t4 time:" + atomicStampedR.getStamp());
                   System.out.println("flag:" + flag + ", newValue:" + atomicStampedR.getReference());
               }
@@ -677,8 +677,8 @@ ABA  问题的描述：
   ```java
   public class ABADemo2 {
   
-      public static  void  main(String[] args) throws InterruptedException {
-          AtomicMarkableReference<Integer> atMarkRef = new AtomicMarkableReference<>(100,false);
+      public static void main(String[] args) throws InterruptedException {
+          AtomicMarkableReference<Integer> atMarkRef = new AtomicMarkableReference<>(100, false);
   
           Thread t5 = new Thread(new Runnable() {
               @Override
@@ -713,7 +713,7 @@ ABA  问题的描述：
                   } catch (InterruptedException e) {
                       e.printStackTrace();
                   }
-                  boolean flag = atMarkRef.compareAndSet(100,500, mark, !mark);
+                  boolean flag = atMarkRef.compareAndSet(100, 500, mark, !mark);
                   System.out.println("flag:" + flag + ", newValue:" + atMarkRef.getReference());
               }
           });

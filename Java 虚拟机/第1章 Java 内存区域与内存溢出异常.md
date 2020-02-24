@@ -160,6 +160,3 @@ Exception in thread "main" java.lang.StackOverflowError
 ```
 
 #### 1.3.3 方法区和运行时常量池溢出
-
-
-

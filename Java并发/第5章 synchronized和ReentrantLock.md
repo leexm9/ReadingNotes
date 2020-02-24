@@ -442,7 +442,8 @@ ReetrantLock本身也是一种支持重进入的锁，即该锁可以支持一�
           int c = getState();		// 获取到重入次数
           if (c == 0) {
               /**
-               * 查看是否有比当前线程等待更久的线程（即当前线程节点是否有前置节点），有就返回 true 				         * 没有就返回 false，和 nonfairTryAcquire 相比，只多出了这一块
+               * 查看是否有比当前线程等待更久的线程（即当前线程节点是否有前置节点），有就返回 true 				         
+               * 没有就返回 false，和 nonfairTryAcquire 相比，只多出了这一块
                * hasQueuedPredecessors() 这里体现了公平性
                */
               if (!hasQueuedPredecessors() &&
@@ -502,7 +503,7 @@ public class ReadWriteMap<K, V> {
     private final Map<K, V> map;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock r = lock.readLock();
-    private final Lock w  = lock.writeLock();
+    private final Lock w = lock.writeLock();
     
     public ReadWriteMap(Map<K, V> map) {
         this.map = map;
