@@ -250,7 +250,7 @@ sentinel 节点间因为共同监视同一个 master 节点从而相互关联起
 当一台 master 真正宕机后，可能多个 sentinel 节点同时发现并交换“主观不可用状态”，同时达到“主观不可用状态”，同时发起failover，但最终只有一个sentinel 节点作为 failover 发起者，此时需要一个leader选举的过程：
 
 - sentinelState的 epoch变量类似于raft 协议中的term(选举回合)
-- 每一个确认了 master“客官不可用状态”的 sentinel 节点都会向周围广播自己的参选请求
+- 每一个确认了 master“客观不可用状态”的 sentinel 节点都会向周围广播自己的参选请求
 - sentinel 节点接收到其他节点的参选请求，如果在本轮中它还没有发送过参选请求的话，它将本轮的选举意向置为收到的参选请求并回复对方；如果在本轮中它已经表达过意向了，则拒绝本轮中所有的其他参选意向，并回复之前的意向
 - 每个发出参选意向的 sentinel 节点，如果收到超过半数的节点同意某个 sentinel 的参选请求，则确认该 sentinel 节点为本轮 leader
 - leader 的 sentinel 节点确认后，由 leader 节点依据一定规则从 master 的slave 节点中选取一个作为新的 master，并告知其他的 slave
