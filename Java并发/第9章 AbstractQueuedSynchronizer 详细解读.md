@@ -1,5 +1,3 @@
-
-
 ###  第 9 章 AbstractQueuedSynchronizer 详细解读
 
 AQS 的相关说明，参见第 5 章。
