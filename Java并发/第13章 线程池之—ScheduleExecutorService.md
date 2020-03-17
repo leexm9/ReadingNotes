@@ -1,4 +1,4 @@
-## 第 13 章 调度线程池 ScheduleExecutorService
+## 第 13 章 线程池之— ScheduleExecutorService
 
 首先看下怎么使用
 
