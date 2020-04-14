@@ -501,7 +501,7 @@ final boolean acquireQueued(final Node node, int arg) {
     }
 }
 
-// 去除前面被取消的(CANCELLED)的线程节点，若前继节点没有没被取消,则表示当前线程可以被park
+// 去除前面被取消的(CANCELLED)的线程节点，若前继节点没有没被取消，则表示当前线程可以被park
 private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
     int ws = pred.waitStatus;
   	// 前继节点已经成功执行，等待释放锁，所以当前的线程可以安全的park 
@@ -613,8 +613,7 @@ private void setHeadAndPropagate(Node node, int propagate) {
     Node h = head; // Record old head for check below
     setHead(node);
 
-    if (propagate > 0 || h == null || h.waitStatus < 0 ||
-        (h = head) == null || h.waitStatus < 0) {
+    if (propagate > 0 || h == null || h.waitStatus < 0 || (h = head) == null || h.waitStatus < 0) {
         Node s = node.next;
         if (s == null || s.isShared())
             doReleaseShared();

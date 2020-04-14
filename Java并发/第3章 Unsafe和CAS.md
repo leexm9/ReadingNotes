@@ -297,7 +297,7 @@ public final int getAndAddInt(Object var1, long var2, int var4) {
 ```java
 public class AtomicReferenceDemo {
 
-    public static AtomicReference<User> atomicUserRef = new AtomicReference<User>();
+    private static AtomicReference<User> atomicUserRef = new AtomicReference<User>();
 
     public static void main(String[] args) {
         User user = new User("Tom", 18);

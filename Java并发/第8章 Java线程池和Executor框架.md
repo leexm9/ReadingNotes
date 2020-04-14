@@ -144,6 +144,144 @@ public ThreadPoolExecutor(int corePoolSize,
 
 通过扩展线程池进行监控。通过继承线程池并重写线程池的 *beforeExecute*，*afterExecute* 和 *terminated* 方法，可以在任务执行前，执行后和线程池关闭前干一些事情。如监控任务的平均执行时间，最大执行时间和最小执行时间等。
 
+#### 8.2.5 线程池的拒绝策略
+
+***Java 中的拒绝策略***:
+
+- CallerRunsPolicy—调用者运行策略
+
+  ```java
+  public static class CallerRunsPolicy implements RejectedExecutionHandler {
+    	public CallerRunsPolicy() { }
+  
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+          if (!e.isShutdown()) {
+            	r.run();
+          }
+      }
+  }
+  ```
+
+  **功能**：当触发拒绝策略时，只要线程池没有关闭，就由提交任务的当前线程处理。
+  **使用场景**：一般在不允许失败的、对性能要求不高、并发量较小的场景下使用，因为线程池一般情况下不会关闭，也就是提交的任务一定会被运行，但是由于是调用者线程自己执行的，当多次提交任务时，就会阻塞后续任务执行，性能和效率自然就慢了。
+
+- AbortPolicy—中止策略
+
+  ```java
+  public static class AbortPolicy implements RejectedExecutionHandler {
+      public AbortPolicy() { }
+  
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+          throw new RejectedExecutionException("Task " + r.toString() + " rejected from " + e.toString());
+      }
+  }
+  ```
+
+  **功能**：当触发拒绝策略时，直接抛出拒绝执行的异常，中止策略的意思也就是打断当前执行流程
+
+  **使用场景**：这个就没有特殊的场景了，但是一点要正确处理抛出的异常。ThreadPoolExecutor 中默认的策略就是 AbortPolicy，ExecutorService 接口的默认的都是这个。
+
+  >但是请注意，ExecutorService 中的线程池实例队列都是无界的，也就是说把内存撑爆了都不会触发拒绝策略。当自己自定义线程池实例时，使用这个策略一定要处理好触发策略时抛的异常，因为他会打断当前的执行流程。
+
+- DiscardPolicy—丢弃策略
+
+  ```java
+  public static class DiscardPolicy implements RejectedExecutionHandler {
+      public DiscardPolicy() { }
+  
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+      }
+  }
+  ```
+
+  **功能**：直接静悄悄的丢弃这个任务，不触发任何动作
+
+  **使用场景**：如果你提交的任务无关紧要，你就可以使用它 。因为它就是个空实现，会悄无声息的吞噬你的的任务。所以这个策略基本上不用了。
+
+- DiscardOldestPolicy—弃老策略
+
+  ```java
+  public static class DiscardOldestPolicy implements RejectedExecutionHandler {
+      public DiscardOldestPolicy() { }
+  
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+          if (!e.isShutdown()) {
+              e.getQueue().poll();
+              e.execute(r);
+          }
+      }
+  }
+  ```
+
+  **功能**：如果线程池未关闭，就弹出队列头部的元素，然后尝试执行
+
+  **使用场景**：这个策略还是会丢弃任务，丢弃时也是毫无声息，但是特点是丢弃的是老的未执行的任务，而且是待执行优先级较高的任务。
+
+***第三放中的拒绝策略***：
+
+- dubbo 中的线程拒绝策略
+
+  ```java
+  public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
+      protected static final Logger logger = LoggerFactory.getLogger(AbortPolicyWithReport.class);
+  
+      private final String threadName;
+  
+      private final URL url;
+  
+      private static volatile long lastPrintTime = 0;
+  
+      private static Semaphore guard = new Semaphore(1);
+  
+      public AbortPolicyWithReport(String threadName, URL url) {
+          this.threadName = threadName;
+          this.url = url;
+      }
+  
+      @Override
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+          // 告警日志信息
+        	String msg = String.format("Thread pool is EXHAUSTED!" +
+                          " Thread Name: %s, Pool Size: %d (active: %d, core: %d, max: %d, largest: %d), Task: %d (completed: %d)," +
+                          " Executor status:(isShutdown:%s, isTerminated:%s, isTerminating:%s), in %s://%s:%d!",
+                  threadName, e.getPoolSize(), e.getActiveCount(), e.getCorePoolSize(), e.getMaximumPoolSize(), e.getLargestPoolSize(),
+                  e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating(),
+                  url.getProtocol(), url.getIp(), url.getPort());
+          // 输出告警日志
+        	logger.warn(msg);
+        	// 输出当前线程堆栈的详情
+          dumpJStack();
+        	// 抛出拒绝执行异常
+          throw new RejectedExecutionException(msg);
+      }
+  
+      private void dumpJStack() {
+         //省略实现
+      }
+  }
+  ```
+
+- Netty 中的线程池拒接策略：
+
+  ```java
+  private static final class NewThreadRunsPolicy implements RejectedExecutionHandler {
+      NewThreadRunsPolicy() {
+          super();
+      }
+  
+      public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+          try {
+              final Thread t = new Thread(r, "Temporary task executor");
+              t.start();
+          } catch (Throwable e) {
+              throw new RejectedExecutionException("Failed to start a new thread", e);
+          }
+      }
+  }
+  ```
+
+  Netty 中的实现很像 JDK 中的 CallerRunsPolicy，不同的是，CallerRunsPolicy 是直接在调用者线程执行的任务，而 Netty 是新建了一个线程来处理的。所以，Netty 的实现相较于调用者执行策略的使用面就可以扩展到支持高效率高性能的场景了。但是也要注意一点，Netty 的实现里，在创建线程时未做任何的判断约束，也就是说只要系统还有资源就会创建新的线程来处理，直到new不出新的线程了。才会抛创建线程失败的异常。
+
 ### 8.3 Executor 框架简介
 ![任务的两级调度模型](./pictures/executor1.png)
 
@@ -159,7 +297,7 @@ public ThreadPoolExecutor(int corePoolSize,
 - Future 接口和实现 Future 接口的 FutureTask 类，代表异步计算的结果
 - Runnable 接口和 Callable 接口的实现类，都可以被 ThreadPoolExecutor 或 ScheduledThreadPoolExecutor 执行
 
-### 8.4 线程池原理解析
+### 8.4 线程池之——ThreadPoolExecutor
 
 ```java
 public class ThreadPoolExecutor extends AbstractExecutorService {
@@ -337,7 +475,7 @@ private boolean addWorker(Runnable firstTask, boolean core) {
             }
         }
     } finally {
-      	if (! workerStarted)
+      	if (!workerStarted)
         		addWorkerFailed(w);
     }
     return workerStarted;

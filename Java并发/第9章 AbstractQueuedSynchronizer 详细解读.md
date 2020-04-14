@@ -304,9 +304,9 @@ public class TestCountdownLatch {
                         System. out.println("选手" + Thread.currentThread().getName() + "正等待裁判发布口令");
                         // 等待倒数计数到达 0 值
                       	cdOrder.await();
-                        System. out.println("选手" + Thread.currentThread().getName() + "已接受裁判口令");
-                        Thread. sleep((long) (Math. random() * 10000));
-                        System. out.println("选手" + Thread.currentThread().getName() + "到达终点");
+                        System.out.println("选手" + Thread.currentThread().getName() + "已接受裁判口令");
+                        Thread.sleep((long) (Math. random() * 10000));
+                        System.out.println("选手" + Thread.currentThread().getName() + "到达终点");
                       	// 进行一次倒数计数
                         cdAnswer.countDown();
                     } catch (Exception e) {
@@ -361,6 +361,10 @@ public class TestCountdownLatch {
 `CountDownLatch` 的 `await()` 方法，内部调用了 `AQS` 的 `acquireSharedInterruptibly` 方法
 
 ```java
+public void await() throws InterruptedException {
+  sync.acquireSharedInterruptibly(1);
+}
+
 /**
  * 响应中断的共享式获取同步状态
  */
@@ -387,8 +391,7 @@ private void doAcquireSharedInterruptibly(int arg)
           return;
         }
       }
-      if (shouldParkAfterFailedAcquire(p, node) &&
-          parkAndCheckInterrupt())
+      if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
         throw new InterruptedException();
     }
   } finally {
@@ -431,8 +434,7 @@ private void doAcquireShared(int arg) {
       }
       /**
        * 这个地方将同步队列中，node 节点之前的节点状态都 cas 替换为 signal
-       * 线程在这个地方阻塞
-       * 外部调用releaseShare()，进而调用 doReleaseShared()方法，解除阻塞，线程继续自旋
+       * 线程在这个地方阻塞，当外部调用releaseShare()，进而调用 doReleaseShared()方法，解除阻塞，线程继续自旋
        */
       if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
         interrupted = true;
@@ -451,8 +453,7 @@ private void setHeadAndPropagate(Node node, int propagate) {
   Node h = head;
   // 替换头节点
   setHead(node);
-  if (propagate > 0 || h == null || h.waitStatus < 0 ||
-      (h = head) == null || h.waitStatus < 0) {
+  if (propagate > 0 || h == null || h.waitStatus < 0 || (h = head) == null || h.waitStatus < 0) {
     Node s = node.next;
     // 当前节点没有后继节点或者后继节点是共享节点
     if (s == null || s.isShared())

@@ -160,3 +160,4 @@
      - 第四步，调用 BeanPostProcessor.postProcessAfterInitialization 方法，各种代理类的生成就是在这步实现的
 
 10. 拿到 bean 之后，各种缓存处理操作
+

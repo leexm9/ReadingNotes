@@ -71,7 +71,7 @@ public class Thread implements Runnable {
     }
   
   	/**
-  	 * 如果设置的 uncaughtExceptionHandler， 则调用它来处理
+  	 * 如果设置的 uncaughtExceptionHandler，则调用它来处理
   	 * 如果 thread 没有设置，则交由 threadGroup 来处理
   	 */
   	public UncaughtExceptionHandler getUncaughtExceptionHandler() {

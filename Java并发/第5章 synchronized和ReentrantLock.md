@@ -446,8 +446,7 @@ ReetrantLock本身也是一种支持重进入的锁，即该锁可以支持一�
                * 没有就返回 false，和 nonfairTryAcquire 相比，只多出了这一块
                * hasQueuedPredecessors() 这里体现了公平性
                */
-              if (!hasQueuedPredecessors() &&
-                  compareAndSetState(0, acquires)) {
+              if (!hasQueuedPredecessors() && compareAndSetState(0, acquires)) {
                   setExclusiveOwnerThread(current);
                   return true;
               }

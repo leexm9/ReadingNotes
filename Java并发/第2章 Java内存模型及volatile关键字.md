@@ -139,7 +139,7 @@ doSomethingWithConfig(context);
 - 可见性问题
   - 单线程：不存在内存可见性问题；
   - 多线程：Java 通过**volatile**、**synchronized**字实现可见性
-    - **volatile**：volatile 保证变量新值立即被同步回主存，同时使其他线程的本地内存中 volatile 修饰的变量副本值失效，从而读取 volatile 变量要从主存刷新
+    - **volatile**：volatile 保证变量新值立即被同步回主存，同时使其他线程的本地内存中 volatile 修饰的变量副本值失效，从而使得后续读取 volatile 变量要从主存再次刷新
     - **synchronized**：对变量进行解锁前，将对应变量同步回主内存
 - 有序性问题
   - **volatile**：通过禁止重排序实现有序性
@@ -221,7 +221,7 @@ public class Counter {
             e.printStackTrace();
         }
       	/**
-      	 * 注意：这个操作是分三步完成的，读值、+1、写值，++操作就不是同步操作
+      	 * 注意：这个操作是分三步完成的，读值、+1、写值，++操作就不是原子操作
       	 * 如果 counter 是方法内定义的局部变量，++操作就没问题
       	 */
         counter++;
@@ -348,7 +348,7 @@ y = -1; //语句5
 
 Java 内存模型为了实现 volatile 变量的内存语义，会限制编译器重排和指令重排，来实现了volatile 变量的写操作 happen-before 读操作。
 
-有 volatile 修饰的变量进行写操作的时候，汇编指令会多出Lock前缀，Lock前缀在多核处理器下的作用：
+对 volatile 修饰的变量进行写操作的时候，汇编指令会多出Lock前缀，Lock前缀在多核处理器下的作用：
 
 - 将当前处理器缓存行的数据写回主存；
 - 令其他 CPU 里缓存该内存地址的数据无效；
