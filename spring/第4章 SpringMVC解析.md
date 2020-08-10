@@ -4,7 +4,7 @@
 
 做过 web 开发的都知道，我们开的 web 应用最终是要部署在Tomcat、jetty 这类的 servlet容器中运行的。Spring 的 MVC 是基于Servlet功能实现的，通过实现 Servlet 接口的 DispatcherServlet 来封装其核心功能实现。
 
-这篇文章对应的项目实例：
+这篇文章对应的项目实例：https://github.com/leexm9/mvc
 
 ### 4.1 Spring MVC 请求流程详解
 
