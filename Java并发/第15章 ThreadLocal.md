@@ -105,3 +105,4 @@ static class ThreadLocalMap {
 ```
 
 从ThreadLocalMap的定义可以看出Entry的key就是ThreadLocal，而value就是值。同时，Entry也继承WeakReference，所以说Entry所对应key（ThreadLocal实例）的引用为一个弱引用。而且定义了装载因子为数组长度的三分之二。
+
