@@ -1,5 +1,7 @@
 ## 第 12 章 Java 线程池异常处理机制和退出关闭机制
 
+[toc]
+
 ### 12.1 Thread 中异常的处理
 
 首先看下 Thread 线程的异常处理，我们都知道 Runnable 接口中的 run() 方法是不允许抛出异常的，需要我们自己进行 try/catch 进行处理。如果我们不 try/catch 会如何？
@@ -203,7 +205,8 @@ final void runWorker(Worker w) {
     w.unlock();
     boolean completedAbruptly = true;
     try {
-        while (task != null || (task = getTask()) != null) {
+      // 线程通过这个 while 循环不停取任务  
+      while (task != null || (task = getTask()) != null) {
           w.lock();
           if ((runStateAtLeast(ctl.get(), STOP) || 
                (Thread.interrupted() && runStateAtLeast(ctl.get(), STOP))) && !wt.isInterrupted())
@@ -230,10 +233,41 @@ final void runWorker(Worker w) {
                 w.unlock();
             }
         }
+      	// worker 执行任务时，如果遇到runner 没处理的异常，将跳出 while 循环
         completedAbruptly = false;
     } finally {
+      	// 跳出 while 循环，将执行该方法
       	processWorkerExit(w, completedAbruptly);
     }
+}
+
+private void processWorkerExit(Worker w, boolean completedAbruptly) {
+  if (completedAbruptly) // If abrupt, then workerCount wasn't adjusted
+    decrementWorkerCount();
+
+  final ReentrantLock mainLock = this.mainLock;
+  mainLock.lock();
+  try {
+    completedTaskCount += w.completedTasks;
+    // 会将 worker 从线程 worker 池中移除
+    workers.remove(w);
+  } finally {
+    mainLock.unlock();
+  }
+
+  tryTerminate();
+
+  int c = ctl.get();
+  if (runStateLessThan(c, STOP)) {
+    if (!completedAbruptly) {
+      int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
+      if (min == 0 && ! workQueue.isEmpty())
+        min = 1;
+      if (workerCountOf(c) >= min)
+        return; // replacement not needed
+    }
+    addWorker(null, false);
+  }
 }
 ```
 

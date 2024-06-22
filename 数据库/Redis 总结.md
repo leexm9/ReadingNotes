@@ -5,7 +5,6 @@
 ### 1 数据结构
 
 常用的五种数据结构：
-
 - string
 - hash
 - list
@@ -13,15 +12,12 @@
 - zset
 
 不常用、拓展的数据结构：
-
 - bitmap
 - geohash
 - HyperLogLog
 
 #### 1.1 对象头
-
 所有的 redis 对象都有下面的这个头结构：
-
 ```c
 struct RedisObject {
   int4 type;					// 4bits

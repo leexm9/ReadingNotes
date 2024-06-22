@@ -34,7 +34,7 @@ public class Thread implements Runnable {
     ThreadLocal.ThreadLocalMap threadLocals = null;
   
   	/*
-     * InheritableThreadLocal，自父线程继承而来的ThreadLocalMap，
+     * InheritableThreadLocal，从父线程继承而来的ThreadLocalMap，
      * 主要用于父子线程间ThreadLocal变量的传递
      */
     ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;

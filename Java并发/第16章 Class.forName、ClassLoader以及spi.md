@@ -1,5 +1,7 @@
 ## 第 16 章 Class.forName、ClassLoader 以及 spi
 
+[toc]
+
 ### 16.1 Class.forName() 与 ClassLoader
 
 Class.forName() 和 ClassLoader 都可以对类进行加载。ClassLoader 遵循双亲委派模型，实现的功能是“通过一个类的全限定名来获取描述此类的二进制字节流”，获取到字节流之后放在 JVM 中。Class.forName()实际上也是调用 ClassLoader 来实现的。

@@ -1,5 +1,7 @@
 ## 第 7 章 synchronized 锁
 
+[toc]
+
 **synchronized** 关键字的使用方式就不多讲解了，我们知道 synchronized 关键字加锁的本质是对锁对象进行加锁。
 
 JVM 分配在内存中的对象由：对象头、实例数据、对齐填充字节组成，
