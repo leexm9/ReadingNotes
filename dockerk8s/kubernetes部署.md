@@ -12,7 +12,7 @@
 ## docker 安装
 
 ```
-sudo apt install -y docker
+sudo apt install -y docker.io
 
 # 启动 docker 服务
 sudo service docker start
